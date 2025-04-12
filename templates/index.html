@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Socat Forward Manager</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="text"], input[type="number"] { width: 95%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; }
+        input[type="submit"] { padding: 10px 15px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        input[type="submit"]:hover { background-color: #0056b3; }
+        h1, h2 { border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .stop-button { padding: 5px 10px; background-color: #dc3545; color: white; border: none; cursor: pointer; text-decoration: none; display: inline-block; font-size: 0.9em;}
+        .stop-button:hover { background-color: #c82333; }
+        .error { color: red; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Socat Forward Manager</h1>
+
+        {{if .Error}}
+        <p class="error"><strong>Error:</strong> {{.Error}}</p>
+        {{end}}
+
+        <h2>Start New Forward</h2>
+        <form action="/start" method="post">
+            <div class="form-group">
+                <label for="baseIP">Base IP:</label>
+                <input type="text" id="baseIP" name="baseIP" required placeholder="e.g., 192.168.1.100 or 0.0.0.0">
+            </div>
+            <div class="form-group">
+                <label for="basePort">Base Port:</label>
+                <input type="number" id="basePort" name="basePort" required min="1" max="65535" placeholder="e.g., 4444">
+            </div>
+            <div class="form-group">
+                <label for="remoteIP">Remote IP:</label>
+                <input type="text" id="remoteIP" name="remoteIP" required placeholder="e.g., 192.168.2.200">
+            </div>
+            <div class="form-group">
+                <label for="remotePort">Remote Port:</label>
+                <input type="number" id="remotePort" name="remotePort" required min="1" max="65535" placeholder="e.g., 8888">
+            </div>
+            <input type="submit" value="Start Socat Forward">
+        </form>
+
+        <h2>Running Forwards</h2>
+        {{if .Processes}}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Base IP</th>
+                    <th>Base Port</th>
+                    <th>Remote IP</th>
+                    <th>Remote Port</th>
+                    <th>PID</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Processes}}
+                <tr>
+                    <td>{{.ID}}</td>
+                    <td>{{.BaseIP}}</td>
+                    <td>{{.BasePort}}</td>
+                    <td>{{.RemoteIP}}</td>
+                    <td>{{.RemotePort}}</td>
+                    <td>{{.Process.Pid}}</td>
+                    <td>
+                        <a href="/stop?id={{.ID}}" class="stop-button">Stop</a>
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        {{else}}
+        <p>No socat forwards currently running.</p>
+        {{end}}
+    </div>
+        <h2>Event Log</h2>
+        {{if .EventLog}}
+        <div style="height: 200px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; background-color: #f9f9f9; margin-top: 20px;">
+            <table style="width: 100%; font-size: 0.9em;">
+                 <thead>
+                    <tr>
+                        <th style="width: 160px;">Timestamp</th>
+                        <th style="width: 80px;">Type</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .EventLog}}
+                    <tr>
+                        <td>{{.Timestamp.Format "2006-01-02 15:04:05"}}</td>
+                        <td>{{.EventType}}</td>
+                        <td>{{.Details}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{else}}
+        <p>No events logged yet.</p>
+        {{end}}
+        </div>
+</body>
+</html>
+
